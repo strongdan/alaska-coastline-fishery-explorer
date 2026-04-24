@@ -1,18 +1,48 @@
 # Alaska Coastal Fishery Explorer
 
-**Live Demo:** [http://alaska-coastline-fishery-explorer-625978481175-us-east-2-an.s3-website.us-east-2.amazonaws.com/](http://alaska-coastline-fishery-explorer-625978481175-us-east-2-an.s3-website.us-east-2.amazonaws.com/)
+An interactive map application for exploring Alaska coastline fishery data. This project proxies and caches real-time ArcGIS data from the Alaska Department of Fish and Game (ADF&G) to provide a high-performance experience for analysts and researchers.
 
-## What the app is
-A cloud-hosted interactive map application for exploring Alaska coastline fishery data by region, community, and organization.
+**Live Site:** [Explorer App](http://alaska-coastline-fishery-explorer-625978481175-us-east-2-an.s3-website.us-east-2.amazonaws.com/)  
+**Live API:** [API Health](http://fishery-api-alb-526406090.us-east-2.elb.amazonaws.com/health)
 
-## Who this is for
-This is intended for analysts, policymakers, and researchers who want to explore fishery-related data by region, community, and organization.
+## 🚀 Architecture Summary
+- **Frontend:** React + Vite + Leaflet, hosted on **AWS S3** (Static Website Hosting).
+- **Backend:** Express.js Proxy/Cache, running on **AWS ECS Fargate** behind an **Application Load Balancer (ALB)**.
+- **Data Source:** ADF&G ArcGIS REST Services.
 
-## First-version features
-- Alaska coastline basemap
-- region overlays
-- community points
-- zoom-aware map rendering
-- filters for region and community
-- side panel with selected feature details
-- summary counts by selected area
+For more details, see [Architecture Documentation](docs/architecture.md).
+
+## ✨ Key Features
+- **Multi-Region Support:** Toggle between PWS, Bristol Bay, Upper Cook Inlet, and SE Alaska.
+- **Interactive Mapping:** Hover highlights, auto-fit bounds, and detailed district popups.
+- **Server-Side Caching:** Backend proxy reduces load on ArcGIS services and improves speed.
+- **AWS Ready:** Fully containerized and deployed using modern cloud patterns.
+
+## 🛠 Local Development
+### Prerequisites
+- Node.js 20+
+- pnpm
+
+### Setup
+1. **Clone the repo**
+2. **Backend:**
+   ```bash
+   cd apps/api
+   npm install
+   npm start # API runs on http://localhost:3001
+   ```
+3. **Frontend:**
+   ```bash
+   cd apps/web
+   pnpm install
+   pnpm dev # Web runs on http://localhost:5173
+   ```
+
+## 📦 Deployment
+See [Deployment Guide](docs/deployment.md) for instructions on building and pushing updates to AWS.
+
+## 🗺 Roadmap
+- [ ] Add Kodiak and Alaska Peninsula datasets.
+- [ ] Implement S3-backed persistent caching.
+- [ ] Add layer opacity controls and legends.
+- [ ] CI/CD automation via GitHub Actions.
