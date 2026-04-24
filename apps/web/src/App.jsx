@@ -17,7 +17,7 @@ function App() {
 
     if (!dataset.available || !dataset.geojsonUrl) {
       setLoading(false);
-      setError(\`Dataset "\${dataset.name}" is coming soon.\`);
+      setError("Dataset " + dataset.name + " is coming soon.");
       return;
     }
 
