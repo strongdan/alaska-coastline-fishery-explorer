@@ -9,12 +9,16 @@ module.exports = {
       cache.delete(key);
       return null;
     }
-    return entry.value;
+    return entry;
   },
   set: (key, value) => {
+    const now = Date.now();
+    const expires = now + TTL;
     cache.set(key, {
       value,
-      expires: Date.now() + TTL
+      cachedAt: now,
+      expires: expires
     });
+    return expires;
   }
 };
