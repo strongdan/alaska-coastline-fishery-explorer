@@ -90,7 +90,7 @@ export default function MapView({ data, loading, error, propertyMap }) {
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
-          attribution="&copy; <a href=&quot;https://www.openstreetmap.org/copyright&quot;>OpenStreetMap</a> contributors"
+          attribution='&copy; OpenStreetMap contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {data && (
