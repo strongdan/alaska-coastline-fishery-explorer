@@ -13,10 +13,16 @@ function App() {
 
   useEffect(() => {
     setData(null);
-    setLoading(true);
     setError(null);
 
-    fetch(dataset.url)
+    if (!dataset.available || !dataset.geojsonUrl) {
+      setLoading(false);
+      setError(\`Dataset "\${dataset.name}" is coming soon.\`);
+      return;
+    }
+
+    setLoading(true);
+    fetch(dataset.geojsonUrl)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch data from ArcGIS");
         return res.json();
@@ -30,7 +36,7 @@ function App() {
         setError(err.message);
         setLoading(false);
       });
-  }, [selectedKey, dataset.url]);
+  }, [selectedKey, dataset.geojsonUrl, dataset.available, dataset.name]);
 
   return (
     <div style={{ height: "100vh", width: "100%", position: "relative" }}>
@@ -51,11 +57,14 @@ function App() {
               fontSize: "0.9rem"
             }}
           >
-            {Object.keys(DATASETS).map((key) => (
-              <option key={key} value={key}>
-                {DATASETS[key].name}
-              </option>
-            ))}
+            {Object.keys(DATASETS).map((key) => {
+              const d = DATASETS[key];
+              return (
+                <option key={key} value={key} disabled={!d.available}>
+                  {d.name} {!d.available ? "(coming soon)" : ""}
+                </option>
+              );
+            })}
           </select>
         </div>
       </InfoPanel>
