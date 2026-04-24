@@ -1,8 +1,10 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const datasets = require("./lib/datasets");
 const cache = require("./services/cache");
 const db = require("./db"); // Optional RDS connection
+const census = require("./services/census");
 const { CloudWatchClient, PutMetricDataCommand } = require("@aws-sdk/client-cloudwatch");
 
 const app = express();
@@ -88,6 +90,27 @@ app.get("/api/geojson/:datasetId", async (req, res) => {
     emitMetric("UpstreamFetchErrors", 1);
     console.error(JSON.stringify({ level: "error", event: "FETCH_ERROR", datasetId, error: error.message }));
     res.status(502).json({ error: "Failed to fetch data from upstream source", details: error.message });
+  }
+});
+
+app.get("/api/census/:fipsCode", async (req, res) => {
+  const { fipsCode } = req.params;
+  const cacheKey = `census-\${fipsCode}`;
+
+  const cachedEntry = cache.get(cacheKey);
+  if (cachedEntry) {
+    return res.json(cachedEntry.value);
+  }
+
+  try {
+    const data = await census.getCommunityData(fipsCode);
+    if (!data) {
+      return res.status(404).json({ error: "Census data not found" });
+    }
+    cache.set(cacheKey, data);
+    res.json(data);
+  } catch (error) {
+    res.status(502).json({ error: "Failed to fetch from Census API" });
   }
 });
 

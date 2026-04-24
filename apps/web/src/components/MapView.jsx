@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { MapContainer, TileLayer, GeoJSON, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON, useMap, CircleMarker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -21,7 +21,7 @@ function FitBounds({ data }) {
   return null;
 }
 
-export default function MapView({ data, loading, error, propertyMap }) {
+export default function MapView({ data, communityData, loading, error, propertyMap, communityPropertyMap, onCommunityClick }) {
   const defaultStyle = {
     color: "#005bbb",
     weight: 2,
@@ -35,23 +35,35 @@ export default function MapView({ data, loading, error, propertyMap }) {
     fillOpacity: 0.4,
   };
 
+  const communityMarkerStyle = {
+    radius: 6,
+    fillColor: "#ef4444",
+    color: "#fff",
+    weight: 2,
+    opacity: 1,
+    fillOpacity: 0.8
+  };
+
   const onEachFeature = (feature, layer) => {
     const props = feature.properties || {};
     const map = propertyMap || {};
     
-    const name = props[map.name] || "Unknown area";
-    const code = props[map.code] || "—";
-    const region = props[map.region] || "—";
-    const group = props[map.group] || "—";
+    const name = props[map.name] || props.NAME || "Unknown area";
+    
+    let propertiesHtml = "";
+    Object.entries(map).forEach(([label, propKey]) => {
+      const value = props[propKey];
+      if (value !== undefined && value !== null) {
+        const displayLabel = label.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+        propertiesHtml += `<div><strong>${displayLabel}:</strong> ${value}</div>`;
+      }
+    });
 
     const popupHtml = `
       <div style="font-family: sans-serif;">
         <strong style="font-size: 1.1rem; display: block; margin-bottom: 4px;">${name}</strong>
         <div style="font-size: 0.9rem;">
-          <div><strong>Area:</strong> ${name}</div>
-          <div><strong>Area code:</strong> ${code}</div>
-          <div><strong>Region code:</strong> ${region}</div>
-          <div><strong>Fishery group:</strong> ${group}</div>
+          ${propertiesHtml || "<div>No properties available</div>"}
         </div>
       </div>
     `;
@@ -93,6 +105,7 @@ export default function MapView({ data, loading, error, propertyMap }) {
           attribution='&copy; OpenStreetMap contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        
         {data && (
           <>
             <GeoJSON
@@ -104,6 +117,36 @@ export default function MapView({ data, loading, error, propertyMap }) {
             <FitBounds data={data} />
           </>
         )}
+
+        {communityData && communityData.features && communityData.features.map((feature, idx) => {
+          const coords = feature.geometry.coordinates;
+          const props = feature.properties;
+          return (
+            <CircleMarker 
+              key={`comm-${idx}`}
+              center={[coords[1], coords[0]]}
+              pathOptions={communityMarkerStyle}
+              eventHandlers={{
+                click: () => onCommunityClick(props)
+              }}
+            >
+              <Popup>
+                <div style={{ fontFamily: "sans-serif" }}>
+                  <strong style={{ fontSize: "1.1rem", display: "block", marginBottom: "4px" }}>
+                    {props[communityPropertyMap.name]}
+                  </strong>
+                  <div style={{ fontSize: "0.9rem" }}>
+                    <div><strong>Code:</strong> {props[communityPropertyMap.code]}</div>
+                    <div><strong>Region:</strong> {props[communityPropertyMap.region]}</div>
+                    <div style={{ marginTop: "8px", fontWeight: "bold", color: "#005bbb" }}>
+                      Click for Census data ➜
+                    </div>
+                  </div>
+                </div>
+              </Popup>
+            </CircleMarker>
+          );
+        })}
       </MapContainer>
     </div>
   );

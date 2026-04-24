@@ -1,90 +1,134 @@
 /**
  * Central configuration for all datasets.
- * Pointing to the new AWS Fargate Proxy API.
+ * Pointing to the local proxy API on port 3002 for verification.
  */
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://fishery-api-alb-526406090.us-east-2.elb.amazonaws.com";
+const API_BASE = "http://localhost:3002";
 
-export const DATASETS = {
-  pws_salmon_districts: {
-    id: "pws_salmon_districts",
-    name: "Prince William Sound & Copper River",
-    description: "Commercial salmon districts for PWS and Copper River.",
-    layerType: "Districts",
-    geojsonUrl: `${API_BASE}/api/geojson/pws`,
-    sourcePageUrl: "https://soa-adfg.opendata.arcgis.com/datasets/c24e3c99c3904233bba565255d54701c_0/about",
+export const REGIONS = [
+  {
+    id: "pws",
+    name: "Prince William Sound",
     available: true,
-    status: "ready",
-    propertyMap: {
-      name: "DISTRICT_NAME",
-      code: "DISTRICT_CODE",
-      region: "REGION_CODE",
-      group: "FISHERY_GROUP_CODE"
-    }
+    layers: [
+      {
+        id: "pws_salmon_districts",
+        name: "Districts",
+        layerType: "Districts",
+        description: "Management units for Prince William Sound and Copper River.",
+        geojsonUrl: `${API_BASE}/api/geojson/pws`,
+        propertyMap: {
+          name: "DISTRICT_NAME",
+          code: "DISTRICT_CODE",
+          region: "REGION_CODE",
+          group: "FISHERY_GROUP_CODE"
+        }
+      }
+    ]
   },
-  bristol_bay_districts: {
-    id: "bristol_bay_districts",
+  {
+    id: "bristol_bay",
     name: "Bristol Bay",
-    description: "Commercial salmon districts for Bristol Bay.",
-    layerType: "Districts",
-    geojsonUrl: `${API_BASE}/api/geojson/bristol-bay`,
-    sourcePageUrl: "https://data-adfg.opendata.arcgis.com/datasets/ADFG::commercial-fisheries-bristol-bay-salmon-districts/about",
     available: true,
-    status: "ready",
-    propertyMap: {
-      name: "DISTRICT_NAME",
-      code: "DISTRICT_CODE",
-      region: "REGION_CODE",
-      group: "FISHERY_GROUP_CODE"
-    }
+    layers: [
+      {
+        id: "bristol_bay_districts",
+        name: "Districts",
+        layerType: "Districts",
+        description: "Management units for Bristol Bay commercial salmon fisheries.",
+        geojsonUrl: `${API_BASE}/api/geojson/bristol-bay`,
+        propertyMap: {
+          name: "DISTRICT_NAME",
+          code: "DISTRICT_CODE",
+          region: "REGION_CODE",
+          group: "FISHERY_GROUP_CODE"
+        }
+      }
+    ]
   },
-  upper_cook_inlet_districts: {
-    id: "upper_cook_inlet_districts",
+  {
+    id: "upper_cook_inlet",
     name: "Upper Cook Inlet",
-    description: "Commercial salmon districts for Upper Cook Inlet.",
-    layerType: "Districts",
-    geojsonUrl: `${API_BASE}/api/geojson/upper-cook-inlet`,
-    sourcePageUrl: "https://geodata.alaska.gov/datasets/ADFG::commercial-fisheries-upper-cook-inlet-salmon-districts/about",
     available: true,
-    status: "ready",
-    propertyMap: {
-      name: "DISTRICT_NAME",
-      code: "DISTRICT_CODE",
-      region: "REGION_CODE",
-      group: "FISHERY_GROUP_CODE"
-    }
+    layers: [
+      {
+        id: "upper_cook_inlet_districts",
+        name: "Districts",
+        layerType: "Districts",
+        description: "Management units for Upper Cook Inlet commercial salmon fisheries.",
+        geojsonUrl: `${API_BASE}/api/geojson/upper-cook-inlet`,
+        propertyMap: {
+          name: "DISTRICT_NAME",
+          code: "DISTRICT_CODE",
+          region: "REGION_CODE",
+          group: "FISHERY_GROUP_CODE"
+        }
+      }
+    ]
   },
-  seak_salmon_districts: {
-    id: "seak_salmon_districts",
+  {
+    id: "southeast",
     name: "Southeast Alaska",
-    description: "Commercial salmon districts for Southeast Alaska (Simplified).",
-    layerType: "Districts",
-    geojsonUrl: `${API_BASE}/api/geojson/southeast`,
-    sourcePageUrl: "https://soa-adfg.opendata.arcgis.com/datasets/adfg::seak-salmon-districts-simplified/about",
     available: true,
-    status: "ready",
-    propertyMap: {
-      name: "DISTRICT_NAME_1",
-      code: "DISTRICT_CODE_1",
-      region: "REGION_CODE",
-      group: "FISHERY_GROUP_CODE"
-    }
+    layers: [
+      {
+        id: "seak_salmon_districts",
+        name: "Districts",
+        layerType: "Districts",
+        description: "Primary management units for Southeast Alaska commercial salmon fisheries.",
+        geojsonUrl: `${API_BASE}/api/geojson/southeast-districts`,
+        propertyMap: {
+          name: "DISTRICT_NAME",
+          code: "DISTRICT_CODE",
+          region: "REGION_CODE",
+          group: "FISHERY_GROUP_CODE"
+        }
+      },
+      {
+        id: "seak_salmon_sections",
+        name: "Sections",
+        layerType: "Sections",
+        description: "Finer subdivisions within districts used for precise fishery management.",
+        geojsonUrl: `${API_BASE}/api/geojson/southeast-sections`,
+        propertyMap: {
+          name: "SECTION_NAME",
+          code: "SECTION_CODE",
+          district: "DISTRICT_NAME"
+        }
+      },
+      {
+        id: "seak_salmon_stat_areas",
+        name: "Statistical Areas",
+        layerType: "Statistical Areas",
+        description: "Reporting and analysis areas used for catch documentation and research.",
+        geojsonUrl: `${API_BASE}/api/geojson/southeast-stat-areas`,
+        propertyMap: {
+          name: "STAT_AREA_NAME",
+          code: "STAT_AREA",
+          district: "DISTRICT_NAME",
+          section: "SECTION_NAME"
+        }
+      }
+    ]
   },
-  kodiak_salmon_districts: {
-    id: "kodiak_salmon_districts",
+  {
+    id: "kodiak",
     name: "Kodiak",
-    description: "Commercial salmon districts for Kodiak.",
-    layerType: "Districts",
-    geojsonUrl: "",
-    sourcePageUrl: "https://soa-adfg.opendata.arcgis.com/datasets/adfg::kodiak-salmon-commercial-fishing-districts/about",
     available: false,
-    status: "todo",
-    propertyMap: {
-      name: "DISTRICT_NAME",
-      code: "DISTRICT_CODE",
-      region: "REGION_CODE",
-      group: "FISHERY_GROUP_CODE"
-    }
+    layers: []
+  }
+];
+
+export const DEFAULT_REGION = "pws";
+export const DEFAULT_LAYER_INDEX = 0;
+
+export const COMMUNITIES = {
+  id: "alaska_communities",
+  name: "Communities",
+  description: "Alaska cities, villages, and census-designated places.",
+  geojsonUrl: `${API_BASE}/api/geojson/alaska-communities`,
+  propertyMap: {
+    name: "RESCOMM",
+    code: "LOC_CODE",
+    region: "REGION"
   }
 };
-
-export const DEFAULT_DATASET = "pws_salmon_districts";
