@@ -2,7 +2,7 @@
  * Central configuration for all datasets.
  * Pointing to the new AWS Fargate Proxy API.
  */
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://3.144.126.172:3001";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://fishery-api-alb-526406090.us-east-2.elb.amazonaws.com";
 
 export const DATASETS = {
   pws_salmon_districts: {
