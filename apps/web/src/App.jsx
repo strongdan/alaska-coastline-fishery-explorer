@@ -40,7 +40,11 @@ function App() {
 
   return (
     <div style={{ height: "100vh", width: "100%", position: "relative" }}>
-      <InfoPanel name={dataset.name} description={dataset.description}>
+      <InfoPanel 
+        name={dataset.name} 
+        description={dataset.description}
+        layerType={dataset.layerType}
+      >
         <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "12px" }}>
           <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "4px", fontWeight: "bold" }}>
             Select Region:

@@ -1,4 +1,4 @@
-export default function InfoPanel({ name, description, children }) {
+export default function InfoPanel({ name, description, layerType, children }) {
   const panelStyle = {
     position: "absolute",
     top: 16,
@@ -26,9 +26,23 @@ export default function InfoPanel({ name, description, children }) {
     color: "#374151",
   };
 
+  const badgeStyle = {
+    display: "inline-block",
+    backgroundColor: "#e5e7eb",
+    color: "#4b5563",
+    fontSize: "0.75rem",
+    fontWeight: "bold",
+    padding: "2px 8px",
+    borderRadius: "9999px",
+    marginBottom: "8px",
+    textTransform: "uppercase",
+    letterSpacing: "0.025em"
+  };
+
   return (
     <div style={panelStyle}>
       <h1 style={titleStyle}>Fishery Explorer</h1>
+      {layerType && <div style={badgeStyle}>{layerType}</div>}
       <div style={textStyle}>
         <strong>{name}</strong>
         <p style={{ marginTop: "4px" }}>{description}</p>
