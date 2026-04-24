@@ -1,0 +1,22 @@
+-- Draft Schema for Fishery Explorer
+
+CREATE TABLE IF NOT EXISTS datasets (
+    id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    upstream_url TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS cache_entries (
+    dataset_id VARCHAR(50) PRIMARY KEY REFERENCES datasets(id),
+    status VARCHAR(50) NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    last_fetched TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS snapshots (
+    id SERIAL PRIMARY KEY,
+    dataset_id VARCHAR(50) REFERENCES datasets(id),
+    s3_key TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

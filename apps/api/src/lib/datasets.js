@@ -14,9 +14,24 @@ module.exports = {
     name: "Upper Cook Inlet",
     url: "https://gis.adfg.alaska.gov/arcgis/rest/services/CF_public/CookInlet_5AAC_21_200/MapServer/3/query?outFields=*&where=1%3D1&f=geojson"
   },
-  southeast: {
-    id: "southeast",
-    name: "Southeast Alaska",
+  "southeast-districts": {
+    id: "southeast-districts",
+    name: "Southeast Alaska Districts",
     url: "https://services.arcgis.com/VdkVOAHovLuozJG4/arcgis/rest/services/SEAK_Salmon_Districts_Simplified/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
+  },
+  "southeast-sections": {
+    id: "southeast-sections",
+    name: "Southeast Alaska Sections",
+    url: "https://gis.adfg.alaska.gov/ags/rest/services/CF_public/SoutheastSalmon5AAC33_200/MapServer/5/query?where=1%3D1&outFields=*&f=geojson"
+  },
+  "southeast-stat-areas": {
+    id: "southeast-stat-areas",
+    name: "Southeast Alaska Statistical Areas",
+    url: "https://gis.adfg.alaska.gov/ags/rest/services/CF_public/SoutheastSalmon5AAC33_200/MapServer/9/query?where=1%3D1&outFields=*&f=geojson"
+  },
+  "alaska-communities": {
+    id: "alaska-communities",
+    name: "Alaska Communities",
+    url: "https://services.arcgis.com/VdkVOAHovLuozJG4/arcgis/rest/services/Community/FeatureServer/0/query?where=1%3D1&outFields=*&f=geojson"
   }
 };

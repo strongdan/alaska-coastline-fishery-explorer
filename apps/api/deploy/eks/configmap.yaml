@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fishery-api-config
+data:
+  PORT: "3001"
+  # DATABASE_URL: "postgresql://..." (add via Secret in production)

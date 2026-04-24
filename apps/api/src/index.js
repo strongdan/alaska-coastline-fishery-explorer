@@ -2,25 +2,43 @@ const express = require("express");
 const cors = require("cors");
 const datasets = require("./lib/datasets");
 const cache = require("./services/cache");
+const db = require("./db"); // Optional RDS connection
+const { CloudWatchClient, PutMetricDataCommand } = require("@aws-sdk/client-cloudwatch");
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
+// Initialize CloudWatch
+let cwClient = null;
+if (process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION) {
+  cwClient = new CloudWatchClient({ region: process.env.AWS_REGION || "us-east-2" });
+}
+
+// Helper to emit metrics
+const emitMetric = async (metricName, value, unit = "Count") => {
+  if (!cwClient) return;
+  try {
+    await cwClient.send(new PutMetricDataCommand({
+      Namespace: "FisheryExplorer",
+      MetricData: [{ MetricName: metricName, Value: value, Unit: unit }]
+    }));
+  } catch (err) {
+    console.error(JSON.stringify({ level: "error", message: "Failed to emit metric", error: err.message }));
+  }
+};
+
 app.get("/health", (req, res) => {
-  res.json({ ok: true, service: "api" });
+  res.json({ ok: true, service: "api", dbConfigured: db.isConfigured() });
 });
 
 app.get("/api/datasets", (req, res) => {
-  const summary = Object.values(datasets).map(d => ({
-    id: d.id,
-    name: d.name
-  }));
+  const summary = Object.values(datasets).map(d => ({ id: d.id, name: d.name }));
   res.json(summary);
 });
 
 app.get("/api/geojson/:datasetId", async (req, res) => {
+  const startTime = Date.now();
   const { datasetId } = req.params;
   const config = datasets[datasetId];
 
@@ -30,35 +48,50 @@ app.get("/api/geojson/:datasetId", async (req, res) => {
 
   const cachedEntry = cache.get(datasetId);
   if (cachedEntry) {
-    console.log(\`[\${new Date().toISOString()}] CACHE HIT: \${datasetId}\`);
+    emitMetric("CacheHits", 1);
+    emitMetric("ResponseTime", Date.now() - startTime, "Milliseconds");
+    
+    console.log(JSON.stringify({ level: "info", event: "CACHE_HIT", datasetId }));
     res.setHeader("X-Cache-Status", "HIT");
     res.setHeader("X-Cache-Expires-At", new Date(cachedEntry.expires).toISOString());
     return res.json(cachedEntry.value);
   }
 
   try {
-    const response = await fetch(config.url);
-    if (!response.ok) {
-      throw new Error(\`Upstream ArcGIS error: \${response.statusText}\`);
-    }
-    const geojson = await response.json();
+    const https = require("https");
+    const agent = new https.Agent({ rejectUnauthorized: false });
+    
+    const geojson = await new Promise((resolve, reject) => {
+      https.get(config.url, { agent }, (res) => {
+        let body = "";
+        res.on("data", (chunk) => body += chunk);
+        res.on("end", () => {
+          try {
+            resolve(JSON.parse(body));
+          } catch (e) {
+            reject(new Error("Failed to parse upstream JSON"));
+          }
+        });
+      }).on("error", reject);
+    });
     
     const expiresAt = cache.set(datasetId, geojson);
     
-    console.log(\`[\${new Date().toISOString()}] CACHE MISS: \${datasetId}\`);
+    emitMetric("CacheMisses", 1);
+    emitMetric("ResponseTime", Date.now() - startTime, "Milliseconds");
+    
+    console.log(JSON.stringify({ level: "info", event: "CACHE_MISS", datasetId }));
     res.setHeader("X-Cache-Status", "MISS");
     res.setHeader("X-Cache-Expires-At", new Date(expiresAt).toISOString());
     res.json(geojson);
   } catch (error) {
-    console.error(\`[\${new Date().toISOString()}] ERROR fetching dataset \${datasetId}:\`, error);
-    res.status(502).json({ 
-      error: "Failed to fetch data from upstream source",
-      details: error.message 
-    });
+    emitMetric("UpstreamFetchErrors", 1);
+    console.error(JSON.stringify({ level: "error", event: "FETCH_ERROR", datasetId, error: error.message }));
+    res.status(502).json({ error: "Failed to fetch data from upstream source", details: error.message });
   }
 });
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(\`API listening on http://localhost:\${PORT}\`);
+  console.log(JSON.stringify({ level: "info", message: `API listening on http://localhost:${PORT}` }));
 });

@@ -1,0 +1,23 @@
+{
+  "family": "fishery-cache-warmer",
+  "networkMode": "awsvpc",
+  "containerDefinitions": [
+    {
+      "name": "warmer",
+      "image": "your-account-id.dkr.ecr.us-east-2.amazonaws.com/fishery-api:latest",
+      "command": ["node", "src/worker.js"],
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/fishery-cache-warmer",
+          "awslogs-region": "us-east-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ],
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512"
+}
