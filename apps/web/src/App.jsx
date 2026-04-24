@@ -68,7 +68,12 @@ function App() {
           </select>
         </div>
       </InfoPanel>
-      <MapView data={data} loading={loading} error={error} />
+      <MapView 
+        data={data} 
+        loading={loading} 
+        error={error} 
+        propertyMap={dataset.propertyMap}
+      />
     </div>
   );
 }

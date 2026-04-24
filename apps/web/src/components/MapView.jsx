@@ -14,7 +14,7 @@ function FitBounds({ data }) {
   return null;
 }
 
-export default function MapView({ data, loading, error }) {
+export default function MapView({ data, loading, error, propertyMap }) {
   const defaultStyle = {
     color: "#005bbb",
     weight: 2,
@@ -30,18 +30,21 @@ export default function MapView({ data, loading, error }) {
 
   const onEachFeature = (feature, layer) => {
     const props = feature.properties || {};
-    const name = props.REGISTRATION_AREA_NAME || props.DISTRICT_NAME || props.NAME || "Unknown area";
-    const code = props.REGISTRATION_AREA_CODE || props.DISTRICT_CODE || props.CODE || "—";
-    const region = props.REGION_CODE || "—";
-    const group = props.FISHERY_GROUP_CODE || "—";
+    const map = propertyMap || {};
+    
+    const name = props[map.name] || "Unknown area";
+    const code = props[map.code] || "—";
+    const region = props[map.region] || "—";
+    const group = props[map.group] || "—";
 
     const popupHtml = `
       <div style="font-family: sans-serif;">
         <strong style="font-size: 1.1rem; display: block; margin-bottom: 4px;">${name}</strong>
         <div style="font-size: 0.9rem;">
-          <div><strong>Code:</strong> ${code}</div>
-          <div><strong>Region:</strong> ${region}</div>
-          <div><strong>Group:</strong> ${group}</div>
+          <div><strong>Area:</strong> ${name}</div>
+          <div><strong>Area code:</strong> ${code}</div>
+          <div><strong>Region code:</strong> ${region}</div>
+          <div><strong>Fishery group:</strong> ${group}</div>
         </div>
       </div>
     `;
