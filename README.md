@@ -1,5 +1,7 @@
 # Alaska Coastal Fishery Explorer
 
+**Live Demo:** [http://alaska-coastline-fishery-explorer-625978481175-us-east-2-an.s3-website.us-east-2.amazonaws.com/](http://alaska-coastline-fishery-explorer-625978481175-us-east-2-an.s3-website.us-east-2.amazonaws.com/)
+
 ## What the app is
 A cloud-hosted interactive map application for exploring Alaska coastline fishery data by region, community, and organization.
 
