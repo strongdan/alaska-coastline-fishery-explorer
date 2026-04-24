@@ -8,7 +8,14 @@ function FitBounds({ data }) {
   useEffect(() => {
     if (data && data.features && data.features.length > 0) {
       const layer = L.geoJSON(data);
-      map.fitBounds(layer.getBounds(), { padding: [20, 20] });
+      const bounds = layer.getBounds();
+      if (bounds.isValid()) {
+        map.flyToBounds(bounds, { 
+          padding: [40, 40], 
+          maxZoom: 10,
+          duration: 1.5
+        });
+      }
     }
   }, [data, map]);
   return null;
