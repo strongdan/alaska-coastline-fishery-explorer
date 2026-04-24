@@ -30,7 +30,6 @@ export default function MapView({ data, loading, error }) {
 
   const onEachFeature = (feature, layer) => {
     const props = feature.properties || {};
-    // Robust lookup for varying field names
     const name = props.REGISTRATION_AREA_NAME || props.DISTRICT_NAME || props.NAME || "Unknown area";
     const code = props.REGISTRATION_AREA_CODE || props.DISTRICT_CODE || props.CODE || "—";
     const region = props.REGION_CODE || "—";
@@ -81,7 +80,7 @@ export default function MapView({ data, loading, error }) {
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
-          attribution="&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {data && (
