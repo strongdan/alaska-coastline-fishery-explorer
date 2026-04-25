@@ -5,24 +5,18 @@ export default function CommunityDetail({ community, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // We need a mapping from DCRA LOC_CODE to Census FIPS
-  // For this prototype, we'll try to find FIPS in properties or use a fallback
-  const fips = community.LOC_CODE; // This is a placeholder; real mapping needed
-
   useEffect(() => {
-    if (!fips) return;
+    if (!community.LOC_CODE) return;
 
     setLoading(true);
     setError(null);
     
-    // Attempt to fetch from our new API
-    // Note: In a real app, we'd have a robust LOC_CODE -> FIPS lookup
-    // For now, we'll try the LOC_CODE directly if it's 5 digits
-    const targetFips = String(fips).padStart(5, "0");
+    const locCode = community.LOC_CODE;
+    const name = encodeURIComponent(community.RESCOMM);
 
-    fetch(`http://localhost:3002/api/census/${targetFips}`)
+    fetch(`http://localhost:3002/api/community/enrich/${locCode}?name=${name}`)
       .then((res) => {
-        if (!res.ok) throw new Error("Census data not found for this community.");
+        if (!res.ok) throw new Error("Enrichment service unavailable.");
         return res.json();
       })
       .then((json) => {
@@ -33,7 +27,7 @@ export default function CommunityDetail({ community, onClose }) {
         setError(err.message);
         setLoading(false);
       });
-  }, [fips]);
+  }, [community]);
 
   const panelStyle = {
     position: "absolute",
@@ -49,9 +43,31 @@ export default function CommunityDetail({ community, onClose }) {
     border: "1px solid #e5e7eb"
   };
 
+  const getStatusBadge = (status) => {
+    const colors = {
+      confirmed: { bg: "#dcfce7", text: "#166534" },
+      unmatched: { bg: "#f3f4f6", text: "#4b5563" },
+      ambiguous: { bg: "#fef9c3", text: "#854d0e" }
+    };
+    const style = colors[status] || colors.unmatched;
+    return (
+      <span style={{
+        fontSize: "0.7rem",
+        fontWeight: "bold",
+        padding: "2px 6px",
+        borderRadius: "4px",
+        backgroundColor: style.bg,
+        color: style.text,
+        textTransform: "uppercase"
+      }}>
+        {status}
+      </span>
+    );
+  };
+
   return (
     <div style={panelStyle}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "16px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "8px" }}>
         <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: "bold" }}>{community.RESCOMM}</h2>
         <button 
           onClick={onClose}
@@ -59,6 +75,15 @@ export default function CommunityDetail({ community, onClose }) {
         >
           ✕
         </button>
+      </div>
+
+      <div style={{ marginBottom: "16px", display: "flex", gap: "8px", alignItems: "center" }}>
+        {data && getStatusBadge(data.match_status)}
+        {data?.match_status === "confirmed" && (
+          <span style={{ fontSize: "0.7rem", color: "#10b981", fontWeight: "bold" }}>
+            ✓ BOUNDARY LOADED
+          </span>
+        )}
       </div>
 
       <div style={{ fontSize: "0.9rem", color: "#6b7280", marginBottom: "16px" }}>
@@ -73,22 +98,30 @@ export default function CommunityDetail({ community, onClose }) {
         {loading && <div style={{ fontSize: "0.9rem" }}>Loading census data...</div>}
         {error && <div style={{ fontSize: "0.9rem", color: "#b91c1c" }}>{error}</div>}
         
-        {data && (
+        {!loading && !error && data && data.match_status === "confirmed" && data.census_data && (
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <div>
               <div style={{ fontSize: "0.75rem", color: "#9ca3af" }}>Total Population</div>
-              <div style={{ fontSize: "1.1rem", fontWeight: "bold" }}>{data.population.toLocaleString()}</div>
+              <div style={{ fontSize: "1.1rem", fontWeight: "bold" }}>{data.census_data.population.toLocaleString()}</div>
             </div>
             <div>
               <div style={{ fontSize: "0.75rem", color: "#9ca3af" }}>Median Household Income</div>
-              <div style={{ fontSize: "1.1rem", fontWeight: "bold" }}>${data.medianIncome.toLocaleString()}</div>
+              <div style={{ fontSize: "1.1rem", fontWeight: "bold" }}>${data.census_data.medianIncome.toLocaleString()}</div>
             </div>
           </div>
         )}
 
-        <div style={{ marginTop: "20px", fontSize: "0.8rem", fontStyle: "italic", color: "#9ca3af" }}>
-          Data sourced from U.S. Census Bureau ACS 5-Year Estimates (2022).
-        </div>
+        {!loading && data && data.match_status !== "confirmed" && (
+          <div style={{ fontSize: "0.85rem", color: "#6b7280", fontStyle: "italic" }}>
+            No confirmed Census FIPS match found for this community location. Socioeconomic enrichment is unavailable.
+          </div>
+        )}
+
+        {data?.match_status === "confirmed" && (
+          <div style={{ marginTop: "20px", fontSize: "0.8rem", fontStyle: "italic", color: "#9ca3af" }}>
+            Data sourced from U.S. Census Bureau ACS 5-Year Estimates (2022) & TIGERweb.
+          </div>
+        )}
       </div>
     </div>
   );

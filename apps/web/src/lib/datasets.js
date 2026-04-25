@@ -132,3 +132,48 @@ export const COMMUNITIES = {
     region: "REGION"
   }
 };
+
+export const CONTEXT_LAYERS = [
+  {
+    id: "noaa_beluga_ch",
+    name: "NOAA Beluga Critical Habitat",
+    sourceAgency: "NOAA Fisheries (NMFS)",
+    subject: "Cook Inlet Beluga Whale",
+    legalStatus: "Endangered (ESA)",
+    interpretation: "This habitat overlaps with Upper Cook Inlet salmon fisheries. Management must ensure commercial activities do not adversely modify these critical areas for the endangered beluga population.",
+    description: "Designated critical habitat for the endangered Cook Inlet Beluga Whale population.",
+    geojsonUrl: `${API_BASE}/api/geojson/noaa-cook-inlet-beluga-ch`,
+    propertyMap: {
+      common_name: "COMNAME",
+      status: "LISTSTATUS",
+      habitat_area: "UNIT",
+      area_sq_km: "AREASqKm",
+      publication_date: "PUBDATE"
+    },
+    style: {
+      color: "#9333ea",
+      weight: 3,
+      fillColor: "#c084fc",
+      fillOpacity: 0.1,
+      dashArray: "10, 10"
+    }
+  }
+];
+
+export const ENVIRONMENT_LAYERS = [
+  {
+    id: "usgs_water_data",
+    name: "USGS River Gages",
+    description: "Real-time water level and flow data for major salmon rivers.",
+    interpretation: "Water level and temperature are critical drivers of salmon migration and spawning success. High flow can impact gear efficiency, while low flow or high temperature can stress returning fish.",
+    geojsonUrl: `${API_BASE}/api/environmental/water-data`,
+    style: {
+      radius: 8,
+      fillColor: "#0ea5e9",
+      color: "#fff",
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.9
+    }
+  }
+];

@@ -3,36 +3,57 @@ import { MapContainer, TileLayer, GeoJSON, useMap, CircleMarker, Popup } from "r
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-function FitBounds({ data }) {
+function FitBounds({ data, extraData }) {
   const map = useMap();
   useEffect(() => {
+    let bounds = null;
     if (data && data.features && data.features.length > 0) {
-      const layer = L.geoJSON(data);
-      const bounds = layer.getBounds();
-      if (bounds.isValid()) {
-        map.flyToBounds(bounds, { 
-          padding: [40, 40], 
-          maxZoom: 10,
-          duration: 1.5
-        });
+      bounds = L.geoJSON(data).getBounds();
+    }
+    
+    if (extraData) {
+      const extraBounds = L.geoJSON(extraData).getBounds();
+      if (bounds) {
+        bounds.extend(extraBounds);
+      } else {
+        bounds = extraBounds;
       }
     }
-  }, [data, map]);
+
+    if (bounds && bounds.isValid()) {
+      map.flyToBounds(bounds, { 
+        padding: [40, 40], 
+        maxZoom: 12,
+        duration: 1.5
+      });
+    }
+  }, [data, extraData, map]);
   return null;
 }
 
-export default function MapView({ data, communityData, loading, error, propertyMap, communityPropertyMap, onCommunityClick }) {
+export default function MapView({ 
+  data, 
+  communityData, 
+  communityBoundary, 
+  contextLayers = [],
+  envLayers = [],
+  loading, 
+  error, 
+  propertyMap, 
+  communityPropertyMap, 
+  onCommunityClick 
+}) {
   const defaultStyle = {
     color: "#005bbb",
     weight: 2,
     fillColor: "#4da3ff",
-    fillOpacity: 0.25,
+    fillOpacity: 0.1,
   };
 
   const hoverStyle = {
     weight: 4,
     color: "#ff8800",
-    fillOpacity: 0.4,
+    fillOpacity: 0.2,
   };
 
   const communityMarkerStyle = {
@@ -44,11 +65,17 @@ export default function MapView({ data, communityData, loading, error, propertyM
     fillOpacity: 0.8
   };
 
-  const onEachFeature = (feature, layer) => {
+  const boundaryStyle = {
+    color: "#ef4444",
+    weight: 3,
+    fillColor: "#ef4444",
+    fillOpacity: 0.1,
+    dashArray: "5, 5"
+  };
+
+  const onEachFeature = (feature, layer, propMap) => {
     const props = feature.properties || {};
-    const map = propertyMap || {};
-    
-    const name = props[map.name] || props.NAME || "Unknown area";
+    const map = propMap || {};
     
     let propertiesHtml = "";
     Object.entries(map).forEach(([label, propKey]) => {
@@ -61,7 +88,6 @@ export default function MapView({ data, communityData, loading, error, propertyM
 
     const popupHtml = `
       <div style="font-family: sans-serif;">
-        <strong style="font-size: 1.1rem; display: block; margin-bottom: 4px;">${name}</strong>
         <div style="font-size: 0.9rem;">
           ${propertiesHtml || "<div>No properties available</div>"}
         </div>
@@ -69,10 +95,12 @@ export default function MapView({ data, communityData, loading, error, propertyM
     `;
     layer.bindPopup(popupHtml);
 
-    layer.on({
-      mouseover: (e) => { e.target.setStyle(hoverStyle); },
-      mouseout: (e) => { e.target.setStyle(defaultStyle); },
-    });
+    if (!propMap.context_layer) {
+      layer.on({
+        mouseover: (e) => { e.target.setStyle(hoverStyle); },
+        mouseout: (e) => { e.target.setStyle(defaultStyle); },
+      });
+    }
   };
 
   return (
@@ -107,16 +135,32 @@ export default function MapView({ data, communityData, loading, error, propertyM
         />
         
         {data && (
-          <>
-            <GeoJSON
-              key={data.name || "geojson-layer"}
-              data={data}
-              style={() => defaultStyle}
-              onEachFeature={onEachFeature}
-            />
-            <FitBounds data={data} />
-          </>
+          <GeoJSON
+            key={`mgmt-${data.name || "layer"}`}
+            data={data}
+            style={() => defaultStyle}
+            onEachFeature={(f, l) => onEachFeature(f, l, propertyMap)}
+          />
         )}
+
+        {contextLayers.map(cl => cl.data && (
+          <GeoJSON 
+            key={`context-${cl.id}`}
+            data={cl.data}
+            style={() => cl.style}
+            onEachFeature={(f, l) => onEachFeature(f, l, { ...cl.propertyMap, context_layer: true })}
+          />
+        ))}
+
+        {communityBoundary && (
+          <GeoJSON 
+            key={`boundary-${communityBoundary.properties.GEOID}`}
+            data={communityBoundary}
+            style={() => boundaryStyle}
+          />
+        )}
+
+        <FitBounds data={data} extraData={communityBoundary} />
 
         {communityData && communityData.features && communityData.features.map((feature, idx) => {
           const coords = feature.geometry.coordinates;
@@ -147,6 +191,34 @@ export default function MapView({ data, communityData, loading, error, propertyM
             </CircleMarker>
           );
         })}
+
+        {envLayers.map(el => el.data && el.data.map((site, sidx) => (
+          <CircleMarker 
+            key={`env-${el.id}-${sidx}`}
+            center={[site.coordinates[1], site.coordinates[0]]}
+            pathOptions={el.style}
+          >
+            <Popup>
+              <div style={{ fontFamily: "sans-serif", width: "200px" }}>
+                <strong style={{ fontSize: "1rem", display: "block", marginBottom: "4px" }}>{site.name}</strong>
+                <div style={{ fontSize: "0.85rem", color: "#6b7280", marginBottom: "8px" }}>USGS Site: {site.id}</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  {site.readings.map((r, ridx) => (
+                    <div key={ridx} style={{ padding: "4px 8px", background: "#f0f9ff", borderRadius: "4px" }}>
+                      <div style={{ fontSize: "0.75rem", color: "#0369a1", fontWeight: "bold" }}>{r.label}</div>
+                      <div style={{ fontSize: "1rem" }}>
+                        {r.value === "-999999" ? "Ice / No Data" : `${r.value} ${r.unit || ""}`}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: "8px", fontSize: "0.7rem", color: "#9ca3af" }}>
+                  Latest: {new Date(site.readings[0]?.dateTime).toLocaleString()}
+                </div>
+              </div>
+            </Popup>
+          </CircleMarker>
+        )))}
       </MapContainer>
     </div>
   );
