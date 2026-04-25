@@ -1,57 +1,53 @@
 # Alaska Coastal Fishery Explorer
 
-An interactive map application for exploring Alaska coastline fishery data and its intersection with communities, environment, and federal management. This project proxies and caches real-time data from state and federal agencies (ADF&G, NOAA, USGS, Census) to provide a high-performance, context-rich experience.
+A high-performance geospatial data exploration tool that bridges the gap between state fishery management, local communities, and federal ecological context. This application serves as a unified proxy and visualization platform for disparate data from ADF&G, NOAA, USGS, and the U.S. Census Bureau.
 
 **Live Site:** [Explorer App](http://alaska-coastline-fishery-explorer-625978481175-us-east-2-an.s3-website.us-east-2.amazonaws.com/)  
 **Live API:** [API Health](http://fishery-api-alb-526406090.us-east-2.elb.amazonaws.com/health)
 
-## 🚀 Architecture Summary
-- **Frontend:** React + Vite + Leaflet, hosted on **AWS S3** (Static Website Hosting).
-- **Backend:** Express.js Proxy/Cache, running on **AWS ECS Fargate** behind an **Application Load Balancer (ALB)**.
-- **Data Integrations:** ADF&G (Fisheries), NOAA (Habitat), USGS (Water), U.S. Census Bureau (Socioeconomics/Geography).
-
-For more details, see [Architecture Documentation](docs/architecture.md).
+## 🚀 Stack Summary
+- **Frontend:** React + Vite + Leaflet (hosted on AWS S3).
+- **Backend:** Node.js + Express Proxy/Cache (running on AWS ECS Fargate).
+- **Infrastructure:** AWS Application Load Balancer (ALB), CloudWatch Metrics, RDS PostgreSQL (Scaffolded).
+- **Data Integrations:** ArcGIS REST Services (ADF&G, NOAA, Census), USGS NWIS (Water Data).
 
 ## ✨ Key Features
-- **Hierarchical Management Geography:** Navigate Alaska fisheries by region, then toggle between Districts, Sections, and Statistical Areas for precise context.
-- **Community Context:** Explore 200+ Alaska communities with enriched U.S. Census ACS socioeconomic data (Population, Median Income).
-- **Place Geography:** View official Census place boundaries (TIGER/TIGERweb) for matched communities to see their geographic footprint.
-- **Ecological & Environmental Overlays:** 
-  - **NOAA Habitat:** Integrated Cook Inlet Beluga Critical Habitat with built-in management interpretation.
-  - **USGS Water Data:** Real-time streamflow and level data from major salmon river gages (Copper, Kenai, Nushagak).
-- **Unified Discovery:** Integrated search bar to quickly find regions, villages, or specific context layers.
-- **Summary & Comparison:** Compact dashboard for real-time state tracking and side-by-side regional geography comparisons.
+- **Multi-Agency Data Fusion:** Overlays state management boundaries (Sections/Districts) with federal critical habitat (NOAA) and real-time environment data (USGS).
+- **Socioeconomic Enrichment:** Dynamically links 200+ Alaska communities to real-time Census ACS data and official place boundaries.
+- **Hierarchical Geography:** Drill down from broad management regions to specific statistical reporting areas.
+- **Unified Discovery:** Global search for instant navigation across regions, villages, and context layers.
+- **Performance Proxy:** custom Node.js proxy with in-memory caching to bypass slow upstream GIS servers.
+
+## 💡 Why This App Matters
+Managing Alaska's vast coastline requires understanding the complex overlap between regulatory lines, human settlements, and a changing environment. This tool allows analysts and researchers to instantly answer questions like: *"How does endangered Beluga habitat intersect with commercial salmon sections?"* or *"What is the economic profile of the village nearest to this high-water river gage?"*
+
+## 🎬 Demo Workflows
+### 1. The Socioeconomic Connection
+*   Search for **"Akhiok"**.
+*   Select the community result to zoom and load its official Census boundary.
+*   Review the population and income profile in the detail panel to understand the human scale of the Kodiak region.
+
+### 2. Ecological Overlap
+*   Select **Upper Cook Inlet** region.
+*   Toggle **"NOAA Beluga Critical Habitat"** under Federal Context.
+*   Note how the endangered species habitat (purple dash) perfectly overlaps with the Northern District management units, highlighting a primary conservation-management challenge.
+
+### 3. Environmental Real-Time
+*   Select **Prince William Sound** region.
+*   Toggle **"USGS River Gages"**.
+*   Click the gage at the **Copper River** to see real-time flow and level data, critical context for the season's first salmon run.
+
+---
 
 ## 🛠 Local Development
-### Prerequisites
-- Node.js 20+
-- pnpm
-- Census API Key (optional, for enrichment)
-
-### Setup
-1. **Clone the repo**
-2. **Backend:**
-   ```bash
-   cd apps/api
-   npm install
-   npm start # API runs on http://localhost:3001
-   ```
-3. **Frontend:**
-   ```bash
-   cd apps/web
-   pnpm install
-   pnpm dev # Web runs on http://localhost:5173
-   ```
+See the [Setup Guide](docs/deployment.md) for local installation instructions.
 
 ## 📦 Deployment
-See [Deployment Guide](docs/deployment.md) for instructions on building and pushing updates to AWS.
+See the [Deployment Guide](docs/deployment.md) for instructions on building and pushing updates to AWS.
 
 ## 🗺 Roadmap
-- [x] Hierarchical management layers (SEAK Districts/Sections/Stat Areas).
-- [x] Community points and Census ACS enrichment.
-- [x] Federal (NOAA) and Environmental (USGS) context layers.
-- [x] Unified search workflow.
-- [x] Summary and comparison dashboard.
+- [x] Hierarchical management layers & Unified search.
+- [x] Census ACS enrichment & TIGERweb boundaries.
+- [x] NOAA/USGS context layers & interpretation.
 - [ ] Add Kodiak and Alaska Peninsula management layers.
 - [ ] Implement persistent PostgreSQL/RDS storage for community mapping.
-- [ ] Expand USGS integration with automated temperature alerts.
