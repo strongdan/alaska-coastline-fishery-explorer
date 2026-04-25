@@ -33,5 +33,10 @@ module.exports = {
     id: "alaska-communities",
     name: "Alaska Communities",
     url: "https://services.arcgis.com/VdkVOAHovLuozJG4/arcgis/rest/services/Community/FeatureServer/0/query?where=1%3D1&outFields=*&f=geojson"
+  },
+  "noaa-cook-inlet-beluga-ch": {
+    id: "noaa-cook-inlet-beluga-ch",
+    name: "NOAA Cook Inlet Beluga Critical Habitat",
+    url: "https://alaskafisheries.noaa.gov/arcgis/rest/services/ESA_data/MapServer/4/query?where=1%3D1&outFields=*&f=geojson"
   }
 };

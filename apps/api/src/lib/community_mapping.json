@@ -1,0 +1,11 @@
+[
+  { "loc_code": "27001", "name": "Akhiok", "normalized_name": "akhiok", "census_fips": "00650", "status": "confirmed" },
+  { "loc_code": "27056", "name": "Cordova", "normalized_name": "cordova", "census_fips": "17410", "status": "confirmed" },
+  { "loc_code": "27064", "name": "Dillingham", "normalized_name": "dillingham", "census_fips": "18950", "status": "confirmed" },
+  { "loc_code": "27112", "name": "Juneau", "normalized_name": "juneau", "census_fips": "36400", "status": "confirmed" },
+  { "loc_code": "27122", "name": "Ketchikan", "normalized_name": "ketchikan", "census_fips": "38970", "status": "confirmed" },
+  { "loc_code": "27130", "name": "Kodiak", "normalized_name": "kodiak", "census_fips": "40950", "status": "confirmed" },
+  { "loc_code": "27221", "name": "Sitka", "normalized_name": "sitka", "census_fips": "70540", "status": "confirmed" },
+  { "loc_code": "27252", "name": "Unalaska", "normalized_name": "unalaska", "census_fips": "80770", "status": "confirmed" },
+  { "loc_code": "27254", "name": "Valdez", "normalized_name": "valdez", "census_fips": "82200", "status": "confirmed" }
+]

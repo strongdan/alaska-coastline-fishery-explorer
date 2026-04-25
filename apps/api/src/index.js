@@ -5,6 +5,9 @@ const datasets = require("./lib/datasets");
 const cache = require("./services/cache");
 const db = require("./db"); // Optional RDS connection
 const census = require("./services/census");
+const communityService = require("./services/community_service");
+const tiger = require("./services/tiger");
+const usgs = require("./services/usgs");
 const { CloudWatchClient, PutMetricDataCommand } = require("@aws-sdk/client-cloudwatch");
 
 const app = express();
@@ -52,7 +55,7 @@ app.get("/api/geojson/:datasetId", async (req, res) => {
   if (cachedEntry) {
     emitMetric("CacheHits", 1);
     emitMetric("ResponseTime", Date.now() - startTime, "Milliseconds");
-    
+
     console.log(JSON.stringify({ level: "info", event: "CACHE_HIT", datasetId }));
     res.setHeader("X-Cache-Status", "HIT");
     res.setHeader("X-Cache-Expires-At", new Date(cachedEntry.expires).toISOString());
@@ -95,7 +98,7 @@ app.get("/api/geojson/:datasetId", async (req, res) => {
 
 app.get("/api/census/:fipsCode", async (req, res) => {
   const { fipsCode } = req.params;
-  const cacheKey = `census-\${fipsCode}`;
+  const cacheKey = `census-${fipsCode}`;
 
   const cachedEntry = cache.get(cacheKey);
   if (cachedEntry) {
@@ -111,6 +114,63 @@ app.get("/api/census/:fipsCode", async (req, res) => {
     res.json(data);
   } catch (error) {
     res.status(502).json({ error: "Failed to fetch from Census API" });
+  }
+});
+
+app.get("/api/community/enrich/:locCode", async (req, res) => {
+  const { locCode } = req.params;
+  const { name } = req.query; 
+  const cacheKey = `enrich-${locCode}`;
+
+  const cachedEntry = cache.get(cacheKey);
+  if (cachedEntry) {
+    return res.json(cachedEntry.value);
+  }
+
+  try {
+    const data = await communityService.enrichCommunity(locCode, name);
+    cache.set(cacheKey, data);
+    res.json(data);
+  } catch (error) {
+    res.status(502).json({ error: "Enrichment service error" });
+  }
+});
+
+app.get("/api/community/boundary/:fipsCode", async (req, res) => {
+  const { fipsCode } = req.params;
+  const cacheKey = `boundary-${fipsCode}`;
+
+  const cachedEntry = cache.get(cacheKey);
+  if (cachedEntry) {
+    return res.json(cachedEntry.value);
+  }
+
+  try {
+    const data = await tiger.getPlaceBoundary(fipsCode);
+    if (!data) {
+      return res.status(404).json({ error: "Boundary not found" });
+    }
+    cache.set(cacheKey, data);
+    res.json(data);
+  } catch (error) {
+    res.status(502).json({ error: "TIGERweb service error" });
+  }
+});
+
+app.get("/api/environmental/water-data", async (req, res) => {
+  const cacheKey = "usgs-water-data";
+  
+  const cachedEntry = cache.get(cacheKey);
+  if (cachedEntry) {
+    return res.json(cachedEntry.value);
+  }
+
+  try {
+    const data = await usgs.getWaterData();
+    cache.set(cacheKey, data); 
+    res.json(data);
+  } catch (error) {
+    res.status(502).json({ error: "USGS service error" });
   }
 });
 
