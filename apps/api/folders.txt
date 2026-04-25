@@ -1,0 +1,15 @@
+CF_public
+dfg_Imagery
+dfg_ImageServices_CORS96
+dfg_public
+Habitat_Public
+homeranges
+Hosted
+OpenData
+print
+sf_public
+Subsistence
+Utilities
+wc_data_collection
+wc_public
+wc_R3
