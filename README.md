@@ -49,5 +49,5 @@ See the [Deployment Guide](docs/deployment.md) for instructions on building and 
 - [x] Hierarchical management layers & Unified search.
 - [x] Census ACS enrichment & TIGERweb boundaries.
 - [x] NOAA/USGS context layers & interpretation.
-- [ ] Add Kodiak and Alaska Peninsula management layers.
-- [ ] Implement persistent PostgreSQL/RDS storage for community mapping.
+- [x] Add Yakutat and granular management layers for PWS, BB, and UCI.
+- [ ] Deploy RDS PostgreSQL for persistent community mapping.

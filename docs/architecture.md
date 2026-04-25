@@ -1,7 +1,7 @@
 # Architecture: Alaska Coastal Fishery Explorer
 
 ## Overview
-This application follows a modern cloud-native architecture designed for high availability and low latency.
+This application follows a modern cloud-native architecture designed for data fusion and high availability. It integrates multiple government data sources (ADF&G, NOAA, USGS, Census) into a unified high-performance platform.
 
 ## Component Breakdown
 
@@ -9,25 +9,26 @@ This application follows a modern cloud-native architecture designed for high av
 - **Framework:** React 19 + Vite.
 - **Map Library:** React Leaflet (Leaflet).
 - **Hosting:** AWS S3 Static Website Hosting.
-- **Data Flow:** Fetches GeoJSON from the project's own Proxy API to avoid CORS issues and improve reliability.
+- **Features:** Unified Discovery (Search), Context Layering, Hierarchical Selectors, and Summary Dashboard.
 
 ### Backend (apps/api)
 - **Runtime:** Node.js 20 (Express).
 - **Compute:** AWS ECS Fargate (Serverless Containers).
-- **Networking:** Application Load Balancer (ALB) provides a stable DNS endpoint.
-- **Proxy Logic:** Fetches data from external ADF&G ArcGIS REST endpoints.
-- **Caching:** In-memory `Map` with a 1-hour TTL to reduce upstream pressure and speed up responses.
+- **Security:** Census API Key management via `.env` (AWS Secret Manager in production).
+- **Services:**
+  - `CommunityService`: Explicit mapping of state `LOC_CODE` to federal FIPS.
+  - `CensusService`: On-demand socioeconomic enrichment.
+  - `TigerService`: Official place boundary retrieval.
+  - `UsgsService`: Real-time river flow/level data.
+- **Caching:** In-memory with TTL to minimize upstream API pressure.
 
-## Data Flow
-1. User selects a region in the Frontend.
-2. Frontend requests `/api/geojson/:id` from the **ALB**.
-3. ALB routes request to a **Fargate Task**.
-4. API checks **In-Memory Cache**.
-5. If miss: API fetches from **ADF&G ArcGIS**, caches, and returns.
-6. Frontend renders GeoJSON onto the **Leaflet Map**.
+## Data Integration Flow
+1. **State Management Geography**: Proxied from ADF&G ArcGIS REST.
+2. **Community Context**: Points from ADF&G, socioeconomic enrichment from Census ACS 5-Year Estimates.
+3. **Federal Habitat**: ESA Critical Habitat layers from NOAA NMFS.
+4. **Environmental Monitoring**: Real-time river gages from USGS NWIS.
 
 ## Why this Architecture?
-- **S3 Hosting:** Cost-effective and scales infinitely for static assets.
-- **Fargate:** Zero server management; scales based on demand.
-- **ALB:** Enables blue/green deployments and provides a durable URL that doesn't change when containers restart.
-- **Proxy/Cache:** Shields the frontend from external service instability and performance bottlenecks.
+- **S3 Hosting:** Near-zero cost for static assets.
+- **Fargate:** Serverless scaling; only pay for what is used.
+- **Data Proxy:** Solves CORS issues, provides a stable metadata schema across disparate agency sources, and implements critical performance caching.
